@@ -91,3 +91,58 @@ document.querySelectorAll(".inc_dec_button").forEach(control => {
         }
     });
 });
+
+
+// ----- Contact form -----
+const contactForm = document.getElementById("contactForm");
+
+if (contactForm) {
+    const submitBtn = contactForm.querySelector(".contact_submit");
+    const status = document.getElementById("formStatus");
+
+    contactForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        status.classList.remove("success", "error");
+        status.textContent = "Sending your message...";
+        submitBtn.disabled = true;
+
+        const formData = new FormData(contactForm);
+
+        // Use the visitor's own Subject field, with the café name prefixed
+        // so it's easy to spot in your inbox — e.g. "Flavored Café: hello"
+        const visitorSubject = formData.get("subject") || "General Inquiry";
+        formData.set("subject", `Flavored Café: ${visitorSubject}`);
+
+        fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: { "Accept": "application/json" },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    status.textContent = "Thanks for reaching out — we'll get back to you soon.";
+                    status.classList.add("success");
+                    contactForm.reset();
+                } else {
+                    status.textContent = "Something went wrong. Please try again.";
+                    status.classList.add("error");
+                }
+            })
+            .catch(() => {
+                status.textContent = "Network error — please check your connection and try again.";
+                status.classList.add("error");
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+            });
+    });
+}
+
+
+// ----- Footer year -----
+const yearEl = document.getElementById("year");
+if (yearEl) {
+    yearEl.textContent = new Date().getFullYear();
+}
